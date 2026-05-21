@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep RL — Interactive Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,300;1,600&family=IBM+Plex+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ───────────────────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --ink:    #0e0e14;
+  --paper:  #f5f2eb;
+  --cream:  #ede9df;
+  --warm:   #e8e2d4;
+  --accent: #c8460a;
+  --gold:   #b8860b;
+  --teal:   #0a6e6e;
+  --purple: #4a1d96;
+  --muted:  #6b6558;
+  --border: #ccc6b8;
+  --card:   #faf8f4;
+  --mono:   'IBM Plex Mono', monospace;
+  --sans:   'Plus Jakarta Sans', sans-serif;
+  --serif:  'Fraunces', serif;
+  --r:      10px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── Sidebar Navigation ─────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 260px;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  border-right: 3px solid var(--accent);
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: #333; }
+
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid #222;
+}
+.sidebar-logo .course-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.sidebar-logo h1 {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: #fff;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.sidebar-logo p {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+  font-family: var(--mono);
+}
+
+.sidebar-section {
+  padding: 16px 24px 6px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.nav-item:hover { background: #1a1a1a; color: #fff; }
+.nav-item.active { background: #1a1a1a; color: #fff; border-left-color: var(--accent); }
+.nav-item .nav-icon { font-size: 14px; flex-shrink: 0; }
+.nav-item .nav-badge {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 20px;
+  font-family: var(--mono);
+}
+
+.sidebar-progress {
+  margin-top: auto;
+  padding: 20px 24px;
+  border-top: 1px solid #222;
+}
+.progress-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #555;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.progress-bar {
+  height: 4px;
+  background: #222;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  width: 0%;
+}
+.progress-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #888;
+  margin-top: 6px;
+}
+
+/* ── Main Content ───────────────────────────────────────────── */
+.main {
+  margin-left: 260px;
+  min-height: 100vh;
+}
+
+/* ── Sections (pages) ───────────────────────────────────────── */
+.section {
+  display: none;
+  padding: 60px 64px;
+  max-width: 900px;
+  animation: fadeIn 0.4s ease;
+}
+.section.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Typography ─────────────────────────────────────────────── */
+.lect-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.section-subtitle {
+  font-size: 17px;
+  color: var(--muted);
+  margin-bottom: 40px;
+  max-width: 600px;
+  line-height: 1.6;
+}
+h2.topic {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 48px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--cream);
+}
+h3.subtopic {
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--teal);
+  margin: 28px 0 8px;
+}
+p.body { margin-bottom: 16px; color: #2a2520; line-height: 1.8; }
+strong.hi { color: var(--accent); }
+strong.teal { color: var(--teal); }
+strong.purple { color: var(--purple); }
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.callout {
+  border-left: 4px solid var(--accent);
+  background: var(--card);
+  padding: 18px 22px;
+  border-radius: 0 var(--r) var(--r) 0;
+  margin: 24px 0;
+  box-shadow: 2px 2px 0 var(--cream);
+}
+.callout .callout-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.callout p { margin: 0; font-size: 14.5px; line-height: 1.7; }
+
+.callout.teal  { border-left-color: var(--teal); }
+.callout.teal  .callout-label { color: var(--teal); }
+.callout.gold  { border-left-color: var(--gold); }
+.callout.gold  .callout-label { color: var(--gold); }
+.callout.purple{ border-left-color: var(--purple); }
+.callout.purple .callout-label { color: var(--purple); }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.card .card-icon { font-size: 28px; margin-bottom: 10px; }
+.card .card-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.card .card-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+/* ── Table ──────────────────────────────────────────────────── */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 14px;
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: 0 1px 0 var(--border);
+}
+.styled-table thead tr { background: var(--ink); color: #fff; }
+.styled-table th { padding: 13px 16px; text-align: left; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); font-weight: 500; }
+.styled-table td { padding: 12px 16px; border-bottom: 1px solid var(--cream); vertical-align: top; }
+.styled-table tbody tr:nth-child(even) { background: var(--card); }
+.styled-table tbody tr:hover { background: var(--warm); }
+
+/* ── Code block ─────────────────────────────────────────────── */
+.code-block {
+  background: var(--ink);
+  color: #a8e6cf;
+  padding: 20px 24px;
+  border-radius: var(--r);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 20px 0;
+  overflow-x: auto;
+}
+.code-block .comment { color: #666; }
+.code-block .kw { color: #f6d365; }
+.code-block .val { color: #fbc2eb; }
+
+/* ── Formula box ────────────────────────────────────────────── */
+.formula {
+  background: #fff;
+  border: 2px solid var(--ink);
+  padding: 18px 24px;
+  border-radius: var(--r);
+  font-family: var(--mono);
+  font-size: 15px;
+  margin: 20px 0;
+  text-align: center;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.formula .formula-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-family: var(--sans);
+}
+
+/* ── Interactive Elements ───────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #a83800; transform: translateY(-1px); }
+.btn-outline { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+.btn-outline:hover { background: var(--ink); color: #fff; }
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-teal:hover { background: #085858; transform: translateY(-1px); }
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+
+/* ── Quiz ───────────────────────────────────────────────────── */
+.quiz-container { margin: 32px 0; }
+.quiz-q {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 16px;
+  padding: 20px;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  line-height: 1.6;
+}
+.quiz-q .q-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.quiz-option {
+  padding: 13px 18px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: all 0.2s;
+  background: #fff;
+  line-height: 1.5;
+}
+.quiz-option:hover { border-color: var(--accent); background: #fdf6f3; }
+.quiz-option.correct { border-color: var(--teal); background: #f0fafa; color: var(--teal); }
+.quiz-option.wrong   { border-color: #c0392b; background: #fdf5f5; color: #c0392b; }
+.quiz-option.disabled { cursor: not-allowed; opacity: 0.6; }
+.quiz-feedback {
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  display: none;
+}
+.quiz-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+.quiz-feedback.ok { background: #f0fafa; border: 1.5px solid var(--teal); color: var(--teal); }
+.quiz-feedback.bad{ background: #fdf5f5; border: 1.5px solid #c0392b; color: #9b2320; }
+.quiz-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.quiz-score-badge {
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* ── Simulator: RL Loop ──────────────────────────────────────── */
+.rl-loop-viz {
+  background: var(--ink);
+  border-radius: 16px;
+  padding: 40px 32px;
+  margin: 28px 0;
+  position: relative;
+  overflow: hidden;
+}
+.rl-loop-viz::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(200,70,10,0.12) 0%, transparent 60%),
+              radial-gradient(circle at 80% 50%, rgba(10,110,110,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.rl-loop-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: nowrap;
+}
+.rl-node {
+  background: rgba(255,255,255,0.07);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: center;
+  min-width: 120px;
+  transition: all 0.4s;
+}
+.rl-node.pulse {
+  border-color: var(--accent);
+  background: rgba(200,70,10,0.18);
+  box-shadow: 0 0 24px rgba(200,70,10,0.3);
+  transform: scale(1.05);
+}
+.rl-node.pulse-teal {
+  border-color: var(--teal);
+  background: rgba(10,110,110,0.18);
+  box-shadow: 0 0 24px rgba(10,110,110,0.3);
+  transform: scale(1.05);
+}
+.rl-node-icon { font-size: 28px; margin-bottom: 6px; }
+.rl-node-label { color: #fff; font-weight: 700; font-size: 13px; }
+.rl-node-sub { color: #888; font-size: 11px; font-family: var(--mono); margin-top: 2px; }
+.rl-arrow {
+  color: #555;
+  font-size: 22px;
+  padding: 0 8px;
+  flex-shrink: 0;
+  transition: color 0.4s;
+}
+.rl-arrow.lit { color: var(--accent); }
+.rl-loop-info {
+  text-align: center;
+  margin-top: 24px;
+  padding: 16px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.rl-loop-info .step-label { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.rl-loop-info .step-text { color: #ccc; font-size: 14px; line-height: 1.6; }
+.rl-controls { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
+
+/* ── Simulator: K-Armed Bandit ──────────────────────────────── */
+.bandit-sim {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 28px 0;
+}
+.bandit-sim h3 { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+.bandit-sim .sim-desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+.bandits-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.bandit-machine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bandit-machine:hover .machine-body { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+.machine-body {
+  width: 80px;
+  height: 100px;
+  background: linear-gradient(160deg, #2d2d3a, #1a1a26);
+  border-radius: 10px;
+  border: 2px solid #444;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.machine-body.playing {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(200,70,10,0.4);
+}
+.machine-body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 30%;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px 8px 0 0;
+}
+.machine-screen {
+  width: 50px;
+  height: 34px;
+  background: #0a2a0a;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 16px;
+  color: #4cfe4c;
+  font-weight: 700;
+  margin-bottom: 8px;
+  border: 1px solid #1a4a1a;
+}
+.machine-arm {
+  width: 8px;
+  height: 24px;
+  background: #555;
+  border-radius: 4px;
+  position: relative;
+  transition: transform 0.15s;
+  transform-origin: bottom center;
+}
+.machine-arm.pulled { transform: rotate(30deg); }
+.machine-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.machine-count {
+  font-size: 11px;
+  color: var(--accent);
+  font-family: var(--mono);
+}
+.bandit-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.stat-box {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+.stat-box .stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.stat-box .stat-val { font-size: 22px; font-weight: 700; font-family: var(--serif); color: var(--ink); }
+.bandit-log {
+  background: var(--ink);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #888;
+  height: 80px;
+  overflow-y: auto;
+  margin-top: 16px;
+}
+.bandit-log .log-good { color: #4cfe4c; }
+.bandit-log .log-bad  { color: #fe4c4c; }
+.bandit-log .log-info { color: #aaa; }
+.bandit-controls { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
+.epsilon-control { display: flex; align-items: center; gap: 10px; flex: 1; }
+.epsilon-control label { font-size: 13px; font-family: var(--mono); color: var(--muted); white-space: nowrap; }
+.epsilon-control input[type=range] { flex: 1; accent-color: var(--accent); }
+.epsilon-control .eps-val { font-family: var(--mono); font-size: 13px; color: var(--accent); min-width: 32px; text-align: right; }
+.strategy-select {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  font-family: var(--sans);
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+}
+.q-bars {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 80px;
+  margin-top: 16px;
+  padding: 0 4px;
+}
+.q-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.q-bar {
+  width: 100%;
+  background: var(--teal);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+  min-height: 3px;
+  position: relative;
+}
+.q-bar.best { background: var(--accent); }
+.q-bar-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.q-bar-val { font-family: var(--mono); font-size: 10px; color: var(--ink); }
+
+/* ── Exploration/Exploitation Visualizer ────────────────────── */
+.eps-viz {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin: 24px 0;
+}
+.eps-track {
+  height: 32px;
+  background: var(--warm);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  margin: 16px 0;
+}
+.eps-exploit { background: var(--teal); height: 100%; transition: width 0.4s; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; }
+.eps-explore { background: var(--accent); height: 100%; transition: width 0.4s; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; }
+.eps-slider-wrap { display: flex; align-items: center; gap: 14px; }
+.eps-slider-wrap label { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.eps-slider-wrap input { flex: 1; accent-color: var(--accent); }
+.eps-slider-wrap .val { font-family: var(--mono); color: var(--accent); font-weight: 700; min-width: 36px; }
+.eps-prob-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.eps-prob-box {
+  padding: 14px;
+  border-radius: 8px;
+  text-align: center;
+}
+.eps-prob-box.exploit { background: rgba(10,110,110,0.08); border: 1.5px solid var(--teal); }
+.eps-prob-box.explore { background: rgba(200,70,10,0.08); border: 1.5px solid var(--accent); }
+.eps-prob-box .pb-label { font-size: 11px; font-family: var(--mono); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.eps-prob-box.exploit .pb-label { color: var(--teal); }
+.eps-prob-box.explore .pb-label { color: var(--accent); }
+.eps-prob-box .pb-val { font-family: var(--serif); font-size: 28px; font-weight: 900; }
+.eps-prob-box.exploit .pb-val { color: var(--teal); }
+.eps-prob-box.explore .pb-val { color: var(--accent); }
+
+/* ── Value Function Chess Demo ──────────────────────────────── */
+.chess-demo {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin: 24px 0;
+}
+.chess-board-container {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.chess-tree {
+  flex: 1;
+  min-width: 280px;
+}
+.tree-node-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.tree-root { display: flex; justify-content: center; margin-bottom: 0; }
+.tree-branches {
+  display: flex;
+  gap: 40px;
+  margin-top: 0;
+  position: relative;
+}
+.tree-branches::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  width: 1px; height: 30px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+.tree-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.tree-connector {
+  width: 100%;
+  height: 30px;
+  position: relative;
+}
+.t-node {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #fff;
+}
+.t-node:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+.t-node.state-s1 { border-color: var(--purple); background: rgba(74,29,150,0.05); }
+.t-node.state-s2 { border-color: var(--teal); background: rgba(10,110,110,0.06); }
+.t-node.state-s3 { border-color: #c0392b; background: rgba(192,57,43,0.06); }
+.t-node.highlighted { box-shadow: 0 0 0 3px currentColor; transform: scale(1.08); }
+.t-node .node-name { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.t-node .node-val { font-family: var(--serif); font-size: 22px; font-weight: 900; }
+.t-node .node-desc { font-size: 10px; color: var(--muted); text-align: center; margin-top: 2px; }
+.tree-edge-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--paper);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+.chess-explanation {
+  flex: 1;
+  min-width: 200px;
+}
+.chess-explanation .exp-block {
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chess-explanation .exp-block:hover { border-color: var(--accent); }
+.chess-explanation .exp-block.selected { border-color: var(--accent); background: #fdf6f3; }
+.chess-explanation .exp-label { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+
+/* ── Concept Flashcards ──────────────────────────────────────── */
+.flashcard-container {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 520px;
+  height: 220px;
+  margin: 28px auto;
+  cursor: pointer;
+}
+.flashcard {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.card-front {
+  background: var(--ink);
+  color: #fff;
+  border: 2px solid #333;
+  align-items: center;
+  text-align: center;
+}
+.card-front .fc-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+.card-front .fc-term { font-family: var(--serif); font-size: 28px; font-weight: 900; }
+.card-front .fc-hint { font-size: 12px; color: #666; margin-top: 12px; }
+.card-back {
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--border);
+  transform: rotateY(180deg);
+}
+.card-back .fc-def { font-size: 15px; line-height: 1.7; margin-bottom: 10px; }
+.card-back .fc-example { font-size: 13px; color: var(--muted); font-style: italic; border-left: 3px solid var(--accent); padding-left: 10px; }
+.flashcard-nav { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 8px; }
+.fc-counter { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+/* ── Hero banner ────────────────────────────────────────────── */
+.hero {
+  background: var(--ink);
+  margin: -60px -64px 0;
+  padding: 80px 64px 60px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 380px; height: 380px;
+  border-radius: 50%;
+  border: 60px solid rgba(200,70,10,0.1);
+  pointer-events: none;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  right: 80px; bottom: -80px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  border: 40px solid rgba(10,110,110,0.1);
+  pointer-events: none;
+}
+.hero-tag { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
+.hero-title { font-family: var(--serif); font-size: 58px; font-weight: 900; color: #fff; line-height: 1.0; margin-bottom: 16px; }
+.hero-title em { font-style: italic; color: var(--accent); }
+.hero-sub { font-size: 16px; color: #aaa; max-width: 480px; line-height: 1.7; margin-bottom: 32px; }
+.hero-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.hero-chip {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #ccc;
+  font-family: var(--mono);
+}
+.module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 40px; }
+.module-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 4px solid var(--border);
+}
+.module-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-left-color: var(--accent); }
+.module-card .mc-lect { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.module-card .mc-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.module-card .mc-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.module-card .mc-tag { display: inline-block; margin-top: 10px; background: var(--cream); padding: 2px 8px; border-radius: 4px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+/* ── Diff learning table ────────────────────────────────────── */
+.diff-table { width: 100%; margin: 24px 0; }
+.diff-table .diff-header { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+.diff-table .diff-header div { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); padding: 8px 12px; }
+.diff-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+.diff-row div { padding: 12px; border-radius: 8px; font-size: 13.5px; line-height: 1.5; }
+.diff-row .aspect { background: var(--warm); font-weight: 700; font-size: 13px; }
+.diff-row .sup { background: rgba(74,29,150,0.07); border: 1px solid rgba(74,29,150,0.15); }
+.diff-row .unsup { background: rgba(184,134,11,0.07); border: 1px solid rgba(184,134,11,0.15); }
+.diff-row .rl { background: rgba(200,70,10,0.07); border: 1px solid rgba(200,70,10,0.18); }
+
+/* ── Vacuum World Demo ──────────────────────────────────────── */
+.vacuum-sim {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin: 24px 0;
+}
+.vacuum-world {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  margin: 20px 0;
+}
+.vac-room {
+  width: 140px;
+  height: 140px;
+  border: 3px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fff;
+  position: relative;
+  transition: background 0.3s;
+}
+.vac-room:first-child { border-right: 1.5px solid var(--ink); }
+.vac-room:last-child  { border-left: 1.5px solid var(--ink); }
+.vac-room.dirty { background: #fef9e7; }
+.vac-room.clean { background: #f0fafa; }
+.vac-room .room-label { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--muted); position: absolute; top: 8px; left: 10px; }
+.vac-room .dirt-emoji { font-size: 28px; transition: opacity 0.3s; }
+.vac-room .agent-emoji { font-size: 32px; position: absolute; transition: all 0.5s; }
+.vacuum-status {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+  padding: 12px;
+  background: var(--warm);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+.vacuum-controls { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.vacuum-policy {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--ink);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #888;
+}
+.vacuum-policy .pol-step { color: #aaa; margin: 2px 0; }
+.vacuum-policy .pol-step.done { color: #4cfe4c; }
+.vacuum-policy .pol-step.current { color: var(--accent); font-weight: 700; }
+
+/* ── Section complete banner ────────────────────────────────── */
+.section-complete {
+  background: linear-gradient(135deg, var(--teal), #085858);
+  color: #fff;
+  padding: 24px 28px;
+  border-radius: 12px;
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.section-complete .sc-icon { font-size: 36px; }
+.section-complete .sc-text h4 { font-family: var(--serif); font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.section-complete .sc-text p { font-size: 13px; opacity: 0.85; }
+.section-complete .sc-btn { margin-left: auto; }
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Mobile ─────────────────────────────────────────────────── */
+@media(max-width:780px){
+  .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .section { padding: 32px 24px; }
+  .hero { margin: -32px -24px 0; padding: 48px 24px 40px; }
+  .hero-title { font-size: 36px; }
+  .section-title { font-size: 30px; }
+  .menu-btn { display: flex !important; }
+  .chess-board-container { flex-direction: column; }
+  .diff-header, .diff-row { grid-template-columns: 1fr 1fr; }
+  .diff-header div:nth-child(4), .diff-row div:nth-child(4) { display: none; }
+}
+.menu-btn {
+  display: none;
+  position: fixed;
+  top: 16px; left: 16px;
+  z-index: 200;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile menu toggle -->
+<button class="menu-btn" id="menuBtn" onclick="toggleMenu()">☰</button>
+
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="course-tag">Dr. Sanghita · BITS Pilani</div>
+    <h1>Deep Reinforcement Learning</h1>
+    <p>Lectures 1 &amp; 2 · Interactive Guide</p>
+  </div>
+
+  <div class="sidebar-section">Getting Started</div>
+  <a class="nav-item active" onclick="show('home')" href="#">
+    <span class="nav-icon">🏠</span> Home
+  </a>
+  <a class="nav-item" onclick="show('flashcards')" href="#">
+    <span class="nav-icon">🃏</span> Flashcards <span class="nav-badge">20</span>
+  </a>
+
+  <div class="sidebar-section">Lecture 1</div>
+  <a class="nav-item" onclick="show('what-is-rl')" href="#">
+    <span class="nav-icon">🚲</span> What is RL?
+  </a>
+  <a class="nav-item" onclick="show('rl-vs-ml')" href="#">
+    <span class="nav-icon">⚖️</span> RL vs Supervised vs Unsupervised
+  </a>
+  <a class="nav-item" onclick="show('rl-elements')" href="#">
+    <span class="nav-icon">🧩</span> Elements of RL
+  </a>
+  <a class="nav-item" onclick="show('vacuum-world')" href="#">
+    <span class="nav-icon">🤖</span> Vacuum World Demo
+  </a>
+  <a class="nav-item" onclick="show('policy')" href="#">
+    <span class="nav-icon">🗺️</span> Policy &amp; Rewards
+  </a>
+
+  <div class="sidebar-section">Lecture 2</div>
+  <a class="nav-item" onclick="show('value-functions')" href="#">
+    <span class="nav-icon">📈</span> Value Functions
+  </a>
+  <a class="nav-item" onclick="show('bandit')" href="#">
+    <span class="nav-icon">🎰</span> K-Armed Bandit
+  </a>
+  <a class="nav-item" onclick="show('exploration')" href="#">
+    <span class="nav-icon">🧭</span> Exploration vs Exploitation
+  </a>
+  <a class="nav-item" onclick="show('epsilon-greedy')" href="#">
+    <span class="nav-icon">ε</span> ε-Greedy Strategy
+  </a>
+  <a class="nav-item" onclick="show('td-learning')" href="#">
+    <span class="nav-icon">⚡</span> Temporal Difference
+  </a>
+
+  <div class="sidebar-section">Practice</div>
+  <a class="nav-item" onclick="show('quiz1')" href="#">
+    <span class="nav-icon">📝</span> Quiz: Lecture 1 <span class="nav-badge">8 Qs</span>
+  </a>
+  <a class="nav-item" onclick="show('quiz2')" href="#">
+    <span class="nav-icon">📝</span> Quiz: Lecture 2 <span class="nav-badge">8 Qs</span>
+  </a>
+  <a class="nav-item" onclick="show('bandit-sim')" href="#">
+    <span class="nav-icon">🎮</span> Bandit Simulator
+  </a>
+
+  <div class="sidebar-progress">
+    <div class="progress-label">Your Progress</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">0 of 14 sections visited</div>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<main class="main">
+
+<!-- HOME ─────────────────────────────────────────────────── -->
+<div class="section active" id="sec-home">
+  <div class="hero">
+    <div class="hero-tag">MTech · 2nd Semester · Core Course</div>
+    <div class="hero-title">Deep<br><em>Reinforcement</em><br>Learning</div>
+    <div class="hero-sub">An interactive study guide based on Dr. Sanghita's Lectures 1 &amp; 2. Read, interact, simulate, and quiz yourself — everything you need to master the foundations.</div>
+    <div class="hero-chips">
+      <span class="hero-chip">Lectures 1 &amp; 2</span>
+      <span class="hero-chip">20 Flashcards</span>
+      <span class="hero-chip">16 Quiz Questions</span>
+      <span class="hero-chip">3 Simulators</span>
+      <span class="hero-chip">Sutton &amp; Barto aligned</span>
+    </div>
+  </div>
+
+  <div class="module-grid">
+    <div class="module-card" onclick="show('what-is-rl')">
+      <div class="mc-lect">Lecture 1</div>
+      <div class="mc-title">🚲 What is RL?</div>
+      <div class="mc-desc">The bicycle analogy, reward-based learning, and how RL differs fundamentally from supervised learning.</div>
+      <span class="mc-tag">Concept</span>
+    </div>
+    <div class="module-card" onclick="show('rl-vs-ml')">
+      <div class="mc-lect">Lecture 1</div>
+      <div class="mc-title">⚖️ RL vs ML</div>
+      <div class="mc-desc">Side-by-side comparison of the three learning paradigms with the cooking analogy.</div>
+      <span class="mc-tag">Concept</span>
+    </div>
+    <div class="module-card" onclick="show('rl-elements')">
+      <div class="mc-lect">Lecture 1</div>
+      <div class="mc-title">🧩 7 Elements of RL</div>
+      <div class="mc-desc">Agent, Environment, State, Action, Reward, Policy, Value Function — fully mapped.</div>
+      <span class="mc-tag">Core Terms</span>
+    </div>
+    <div class="module-card" onclick="show('vacuum-world')">
+      <div class="mc-lect">Lecture 1</div>
+      <div class="mc-title">🤖 Vacuum World</div>
+      <div class="mc-desc">Step through the classic RL example interactively and see how policy emerges.</div>
+      <span class="mc-tag">Simulator</span>
+    </div>
+    <div class="module-card" onclick="show('value-functions')">
+      <div class="mc-lect">Lecture 2</div>
+      <div class="mc-title">📈 Value Functions</div>
+      <div class="mc-desc">V(s) vs Q(s,a) — why rewards alone fail and how the chess example makes it click.</div>
+      <span class="mc-tag">Deep Concept</span>
+    </div>
+    <div class="module-card" onclick="show('bandit')">
+      <div class="mc-lect">Lecture 2</div>
+      <div class="mc-title">🎰 K-Armed Bandit</div>
+      <div class="mc-desc">The classic action-selection problem that simplifies RL to its pure essence.</div>
+      <span class="mc-tag">Framework</span>
+    </div>
+    <div class="module-card" onclick="show('exploration')">
+      <div class="mc-lect">Lecture 2</div>
+      <div class="mc-title">🧭 Explore vs Exploit</div>
+      <div class="mc-desc">The hotel analogy, greedy moves, and why always playing it safe loses the game.</div>
+      <span class="mc-tag">Key Dilemma</span>
+    </div>
+    <div class="module-card" onclick="show('bandit-sim')">
+      <div class="mc-lect">Practice</div>
+      <div class="mc-title">🎮 Live Bandit Sim</div>
+      <div class="mc-desc">Pull slot machines, choose your strategy, and watch Q-values update in real time.</div>
+      <span class="mc-tag">Interactive</span>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT IS RL ───────────────────────────────────────────── -->
+<div class="section" id="sec-what-is-rl">
+  <div class="lect-tag">Lecture 1 · Foundation</div>
+  <div class="section-title">What is Reinforcement Learning?</div>
+  <div class="section-subtitle">Learning by doing — no textbook, no labels, just interaction and feedback.</div>
+
+  <h2 class="topic">The Bicycle Analogy</h2>
+  <p class="body">Dr. Sanghita opened the course with a deceptively simple question: <em>how did you learn to ride a bicycle?</em> Nobody handed you a textbook. Nobody told you the exact angle to hold your handlebars or the precise force to apply. You simply got on the bike, fell, adjusted, and tried again. That entire process — learning by doing, guided entirely by feedback from the world around you — is the essence of reinforcement learning.</p>
+
+  <div class="callout">
+    <div class="callout-label">🚲 Key Insight</div>
+    <p>Every time you fell off the bicycle, that fall was a <strong class="hi">negative reward</strong> telling you "this approach doesn't work." Every time you balanced for a second longer, that was a <strong class="hi">positive reward</strong>. You were not given a rule book — you discovered the rules through interaction with the environment.</p>
+  </div>
+
+  <h2 class="topic">The RL Loop — Animated</h2>
+  <p class="body">The core of every RL problem is a continuous loop. Click through to see how it works step by step.</p>
+
+  <div class="rl-loop-viz">
+    <div class="rl-loop-row">
+      <div class="t-node rl-node" id="loop-agent">
+        <div class="rl-node-icon">🤖</div>
+        <div class="rl-node-label">Agent</div>
+        <div class="rl-node-sub">the learner</div>
+      </div>
+      <div class="rl-arrow" id="arr1">→</div>
+      <div class="t-node rl-node" id="loop-action">
+        <div class="rl-node-icon">⚡</div>
+        <div class="rl-node-label">Action A</div>
+        <div class="rl-node-sub">aₜ chosen</div>
+      </div>
+      <div class="rl-arrow" id="arr2">→</div>
+      <div class="t-node rl-node" id="loop-env">
+        <div class="rl-node-icon">🌍</div>
+        <div class="rl-node-label">Environment</div>
+        <div class="rl-node-sub">the world</div>
+      </div>
+      <div class="rl-arrow" id="arr3">→</div>
+      <div class="t-node rl-node" id="loop-reward">
+        <div class="rl-node-icon">🏆</div>
+        <div class="rl-node-label">Reward R</div>
+        <div class="rl-node-sub">feedback</div>
+      </div>
+    </div>
+    <div class="rl-loop-info">
+      <div class="step-label" id="loop-step-label">Step 0 of 4</div>
+      <div class="step-text" id="loop-step-text">Click "Next Step" to walk through the RL loop</div>
+    </div>
+    <div class="rl-controls">
+      <button class="btn btn-primary btn-sm" onclick="nextLoopStep()">Next Step →</button>
+      <button class="btn btn-outline btn-sm" onclick="resetLoop()">Reset</button>
+    </div>
+  </div>
+
+  <h2 class="topic">What RL Is — and Is Not</h2>
+  <p class="body">A common misconception is that reinforcement learning <em>is</em> a type of neural network or classifier. Dr. Sanghita was emphatic here: RL is a <strong>learning paradigm</strong>, not a model type. The mathematical function doing the learning inside could be a neural network, a decision tree, or a simple lookup table — but the strategy of learning from environmental interaction is what defines RL.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">✅</div>
+      <div class="card-title">RL IS</div>
+      <div class="card-body">A learning technique. A strategy. A paradigm for sequential decision-making through environmental interaction.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">❌</div>
+      <div class="card-title">RL IS NOT</div>
+      <div class="card-body">A neural network. A classifier. A clustering method. A decision tree. It can use these — but it is not one of them.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">When to Use RL</div>
+      <div class="card-body">When no dataset exists, when the problem is sequential, and when you have a goal that can be represented as a reward function.</div>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <div class="callout-label">🍳 The Cooking Analogy (used throughout the course)</div>
+    <p>You cook upma for your family with no cookbook. Their reaction — "too salty," "not enough oil," "this is perfect!" — is your reward signal. Each time you cook, you adjust based on that feedback. After several iterations you arrive at the perfect recipe. <strong>That final recipe is your policy.</strong></p>
+  </div>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text">
+      <h4>Section Complete!</h4>
+      <p>You understand the core intuition of RL. Next: see how it compares to other learning paradigms.</p>
+    </div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('rl-vs-ml')">Next →</button>
+  </div>
+</div>
+
+<!-- RL vs ML ────────────────────────────────────────────── -->
+<div class="section" id="sec-rl-vs-ml">
+  <div class="lect-tag">Lecture 1 · Comparison</div>
+  <div class="section-title">RL vs Supervised vs Unsupervised</div>
+  <div class="section-subtitle">Three flavours of machine learning — the same cooking kitchen, very different recipes.</div>
+
+  <p class="body">One of the clearest ways to understand RL is to place it alongside the two other learning paradigms you already know. The key difference is not in the mathematical machinery but in <strong class="hi">what data is available</strong> and <strong class="hi">how feedback is provided</strong>.</p>
+
+  <div class="diff-table">
+    <div class="diff-header">
+      <div>Aspect</div>
+      <div style="color:var(--purple)">Supervised</div>
+      <div style="color:var(--gold)">Unsupervised</div>
+      <div style="color:var(--accent)">Reinforcement</div>
+    </div>
+    <div class="diff-row">
+      <div class="aspect">Data available?</div>
+      <div class="sup">Yes — labelled data with targets</div>
+      <div class="unsup">Yes — unlabelled data</div>
+      <div class="rl">No — collected on-the-go by interacting</div>
+    </div>
+    <div class="diff-row">
+      <div class="aspect">Supervision type</div>
+      <div class="sup">High — explicit labels guide every update</div>
+      <div class="unsup">None — find hidden patterns</div>
+      <div class="rl">Reward signals — delayed, sparse, noisy</div>
+    </div>
+    <div class="diff-row">
+      <div class="aspect">Goal / objective</div>
+      <div class="sup">Minimise prediction error on known targets</div>
+      <div class="unsup">Discover structure or clusters</div>
+      <div class="rl">Maximise cumulative reward over time</div>
+    </div>
+    <div class="diff-row">
+      <div class="aspect">Output</div>
+      <div class="sup">Label or continuous value</div>
+      <div class="unsup">Clusters or patterns</div>
+      <div class="rl">Optimal policy π*</div>
+    </div>
+    <div class="diff-row">
+      <div class="aspect">Cooking analogy</div>
+      <div class="sup">Cookbook with exact proportions — labelled target</div>
+      <div class="unsup">Watching many cooking videos to identify styles</div>
+      <div class="rl">Cook upma, get family feedback, adjust, repeat</div>
+    </div>
+  </div>
+
+  <div class="callout teal">
+    <div class="callout-label">💡 The Hybrid Case</div>
+    <p>As one student pointed out in class: many real systems start with supervised learning (pre-training on expert data) and then transition to RL for fine-tuning on the go. Tesla's autopilot does this. Large Language Models (GPT, Claude) are pre-trained with supervised learning then refined with RLHF — Reinforcement Learning from Human Feedback. This is not a contradiction; it is a powerful pattern.</p>
+  </div>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text">
+      <h4>Section Complete!</h4>
+      <p>Next up: the 7 core elements that every RL problem is built from.</p>
+    </div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('rl-elements')">Next →</button>
+  </div>
+</div>
+
+<!-- RL ELEMENTS ─────────────────────────────────────────── -->
+<div class="section" id="sec-rl-elements">
+  <div class="lect-tag">Lecture 1 · Core Vocabulary</div>
+  <div class="section-title">The 7 Elements of RL</div>
+  <div class="section-subtitle">Every RL problem ever built uses exactly these seven building blocks.</div>
+
+  <p class="body">Before writing a single line of code or deriving any algorithm, you need to be fluent in the seven fundamental components of any RL system. These are the vocabulary of the field, and every algorithm you will encounter — from Q-Learning to PPO — is just a different strategy for working with these same seven things.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Agent</div>
+      <div class="card-body">The learner and decision-maker. It perceives the environment, chooses actions, and receives rewards. In the vacuum example: the robot. In chess: the player.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌍</div>
+      <div class="card-title">Environment</div>
+      <div class="card-body">Everything outside the agent. It responds to actions by changing state and delivering rewards. In the vacuum example: the two rooms A and B.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📸</div>
+      <div class="card-title">State (S)</div>
+      <div class="card-body">The current situation — "the picture the robot takes of the world around it." In the vacuum: (current room, clean/dirty). State is what the agent observes.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Action (A)</div>
+      <div class="card-body">The choices available to the agent. In the vacuum: Move Left, Move Right, Suck. Actions are what the agent does in each state.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏆</div>
+      <div class="card-title">Reward (R)</div>
+      <div class="card-body">Scalar feedback from the environment. Can be positive, negative, immediate, delayed, sparse, or noisy. The hero of RL — the only learning signal.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗺️</div>
+      <div class="card-title">Policy (π)</div>
+      <div class="card-body">The strategy. π(a|s) = probability of taking action a in state s. The ultimate output of every RL algorithm — the agent's "rulebook" for behaviour.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <div class="card-title">Value Function</div>
+      <div class="card-body">V(s) or Q(s,a) — estimates expected future reward. Guides long-term decision-making when immediate rewards are sparse or equal. Covered in depth in Lecture 2.</div>
+    </div>
+  </div>
+
+  <h2 class="topic">The Two Key Probabilities</h2>
+  <p class="body">When the environment is stochastic (uncertain), two probability distributions govern what happens. Understanding the difference is essential for every algorithm you will study.</p>
+
+  <div class="formula">
+    <div class="formula-label">Policy (Agent's behaviour)</div>
+    π(a | s) = P(Action = a | State = s)
+  </div>
+  <div class="formula">
+    <div class="formula-label">Model Dynamics (Environment's response)</div>
+    P(s', r | s, a) = P(next state = s', reward = r | state = s, action = a)
+  </div>
+
+  <div class="callout purple">
+    <div class="callout-label">Deterministic vs Stochastic</div>
+    <p><strong class="purple">Deterministic:</strong> one action always leads to the same next state. Chess is mostly deterministic — moving a knight always lands on the same square.<br><br><strong class="purple">Stochastic:</strong> one action can lead to different next states with different probabilities. Stocks are stochastic — investing ₹1000 today might yield profit or loss depending on market forces outside your control.</p>
+  </div>
+
+  <h2 class="topic">Types of Rewards</h2>
+  <table class="styled-table">
+    <thead><tr><th>Type</th><th>Description</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Immediate</strong></td><td>Received right after the action</td><td>Winning a chess coin after a move</td></tr>
+      <tr><td><strong>Delayed</strong></td><td>Comes only after several steps</td><td>Exam result after 8 weeks of studying</td></tr>
+      <tr><td><strong>Sparse</strong></td><td>Rare or infrequent</td><td>Reward only when the full task is complete</td></tr>
+      <tr><td><strong>Non-stationary</strong></td><td>Changes with time / environment</td><td>Stock market returns — vary day to day</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text">
+      <h4>Section Complete!</h4>
+      <p>See all 7 elements working together in the classic Vacuum World simulator.</p>
+    </div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('vacuum-world')">Next →</button>
+  </div>
+</div>
+
+<!-- VACUUM WORLD ─────────────────────────────────────────── -->
+<div class="section" id="sec-vacuum-world">
+  <div class="lect-tag">Lecture 1 · Interactive Demo</div>
+  <div class="section-title">The Vacuum World</div>
+  <div class="section-subtitle">The simplest complete RL environment. Step through the agent's policy and watch every element come alive.</div>
+
+  <p class="body">Dr. Sanghita used the two-room vacuum cleaner as the canonical teaching example. It is minimal enough to reason about completely, yet rich enough to illustrate every one of the seven RL elements. The agent is a robot vacuum. The environment is two rooms — A and B — connected by a doorway. The robot must figure out how to clean both rooms.</p>
+
+  <div class="vacuum-sim" id="vacuumSim">
+    <h3>Vacuum World Simulator</h3>
+    <p class="sim-desc">Use the controls to manually step through the optimal policy, or hit Auto-Run to watch the agent execute it automatically.</p>
+
+    <div class="vacuum-world">
+      <div class="vac-room dirty" id="vroom-A">
+        <span class="room-label">A</span>
+        <span class="dirt-emoji" id="dirt-A">🟫</span>
+        <span class="agent-emoji" id="agent-icon" style="bottom:12px;left:28px">🤖</span>
+      </div>
+      <div class="vac-room dirty" id="vroom-B">
+        <span class="room-label">B</span>
+        <span class="dirt-emoji" id="dirt-B">🟫</span>
+      </div>
+    </div>
+
+    <div class="vacuum-status" id="vac-status">State: Agent in Room A | Room A: Dirty | Room B: Dirty | Reward: 0</div>
+
+    <div class="vacuum-policy">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#555;text-transform:uppercase;margin-bottom:6px">Optimal Policy (π*)</div>
+      <div class="pol-step current" id="ps0">① Agent in Room A, dirty → Action: SUCK → Reward: +1</div>
+      <div class="pol-step" id="ps1">② Agent in Room A, clean → Action: MOVE RIGHT</div>
+      <div class="pol-step" id="ps2">③ Agent in Room B, dirty → Action: SUCK → Reward: +1</div>
+      <div class="pol-step" id="ps3">✅ Goal achieved — both rooms clean!</div>
+    </div>
+
+    <div class="vacuum-controls">
+      <button class="btn btn-primary btn-sm" onclick="vacStep()">Step →</button>
+      <button class="btn btn-teal btn-sm" onclick="vacAuto()">Auto-Run</button>
+      <button class="btn btn-outline btn-sm" onclick="vacReset()">Reset</button>
+    </div>
+  </div>
+
+  <h2 class="topic">Reading the Elements</h2>
+  <table class="styled-table">
+    <thead><tr><th>Element</th><th>Vacuum World Definition</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Agent</strong></td><td>The robot vacuum 🤖</td></tr>
+      <tr><td><strong>Environment</strong></td><td>Rooms A and B with their dirt state</td></tr>
+      <tr><td><strong>State (S)</strong></td><td>(current room, room A clean/dirty, room B clean/dirty) — 8 total states</td></tr>
+      <tr><td><strong>Actions (A)</strong></td><td>Move Left, Move Right, Suck — 3 actions</td></tr>
+      <tr><td><strong>Reward (R)</strong></td><td>+1 for successfully cleaning a room, −1 for all other moves</td></tr>
+      <tr><td><strong>Optimal Policy π*</strong></td><td>Suck (if dirty) → Move Right → Suck (if dirty)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-label">Why −1 for movement?</div>
+    <p>Giving a small negative reward for every non-cleaning action discourages the robot from wandering aimlessly. It learns the <em>shortest efficient path</em> to clean both rooms rather than taking detours. The reward function shapes behaviour — designing it well is part of the domain expert's job.</p>
+  </div>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text"><h4>Section Complete!</h4><p>Now let's look at Policy in more depth.</p></div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('policy')">Next →</button>
+  </div>
+</div>
+
+<!-- POLICY ──────────────────────────────────────────────── -->
+<div class="section" id="sec-policy">
+  <div class="lect-tag">Lecture 1 · Core Concept</div>
+  <div class="section-title">Policy &amp; the Goal of RL</div>
+  <div class="section-subtitle">The policy is the final recipe — the strategy the agent develops after all learning is done.</div>
+
+  <p class="body">If you understand only one concept from this entire course, it should be <strong class="hi">policy</strong>. Everything in RL — every algorithm, every formula, every experiment — exists for one purpose: to find the optimal policy. The policy answers the fundamental question: <em>"Given where I am right now, what should I do?"</em></p>
+
+  <div class="formula">
+    <div class="formula-label">Policy Definition</div>
+    π(a | s) = Probability of taking action a when in state s
+  </div>
+
+  <h3 class="subtopic">Deterministic vs Stochastic Policy</h3>
+  <p class="body">A <strong class="teal">deterministic policy</strong> says: "In state S, always take action A." Think of a chess endgame where one move is obviously optimal — there is no uncertainty. A <strong class="hi">stochastic policy</strong> says: "In state S, take action A1 with 95% probability and A2 with 5%." This is used when the environment is uncertain and the agent must hedge its bets slightly.</p>
+
+  <div class="callout teal">
+    <div class="callout-label">The Convergence Goal</div>
+    <p>RL algorithms start with a random, highly uncertain stochastic policy (50-50 on everything) and progressively sharpen it. The goal of convergence is to arrive at a policy that is <em>almost</em> deterministic — e.g., "take action A with 99% confidence." That 1% residual keeps the agent adaptable if the world changes unexpectedly.</p>
+  </div>
+
+  <h2 class="topic">The Objective of RL — Formally</h2>
+  <p class="body">The entire mission of an RL agent is to find the policy that maximises expected cumulative reward over time. In the chess analogy, you are not just trying to win the next move — you are trying to accumulate as many opponent coins as possible throughout the game so that you eventually achieve checkmate.</p>
+
+  <div class="formula">
+    <div class="formula-label">The RL Objective</div>
+    π* = argmax<sub>π</sub> E[R₁ + R₂ + R₃ + ... + Rₙ]
+  </div>
+
+  <h2 class="topic">How Policy and Value Functions Relate</h2>
+  <p class="body">Policy and value functions are what Dr. Sanghita called a "close-knit family." You compute value functions to evaluate how good your current policy is. Then you use those values to improve the policy. The improved policy generates new experience. New experience updates the value functions. This cycle repeats until both converge — that is what RL training actually looks like in practice.</p>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text"><h4>Lecture 1 Complete! 🎉</h4><p>Ready for Lecture 2? Start with Value Functions — the concept that unlocks everything.</p></div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('value-functions')">Start Lecture 2 →</button>
+  </div>
+</div>
+
+<!-- VALUE FUNCTIONS ─────────────────────────────────────── -->
+<div class="section" id="sec-value-functions">
+  <div class="lect-tag">Lecture 2 · Key Concept</div>
+  <div class="section-title">Value Functions</div>
+  <div class="section-subtitle">Why immediate rewards aren't enough — and how value functions look into the future.</div>
+
+  <h2 class="topic">The Problem with Rewards Alone</h2>
+  <p class="body">You might think: if the goal of RL is to maximise reward, then just always pick the action with the highest immediate reward, right? The chess example Dr. Sanghita introduced demolishes this intuition completely.</p>
+  <p class="body">Imagine you are mid-game at state S1. You have two moves: Move A leading to S2, and Move B leading to S3. Recall that in chess, the reward design is: win = +1, loss = −1, every other mid-game move = 0. Both your moves are mid-game moves, so both give you a reward of zero. The immediate reward is completely useless here — it cannot distinguish between a path that leads to checkmate in 5 moves and one that leads to losing your queen in 3 moves.</p>
+
+  <!-- Chess interactive demo -->
+  <div class="chess-demo">
+    <h3 style="font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:6px">Chess Value Function Demo</h3>
+    <p class="sim-desc" style="font-size:13px;color:var(--muted);margin-bottom:20px">Click each path to understand why the value function guides better than the reward alone.</p>
+    <div class="chess-board-container">
+      <div class="chess-tree">
+        <div class="tree-root">
+          <div class="t-node state-s1" id="chess-s1" onclick="selectChess('s1')">
+            <div class="node-name" style="color:var(--purple)">S₁</div>
+            <div class="node-val" style="color:var(--purple)">?</div>
+            <div class="node-desc">Current state</div>
+          </div>
+        </div>
+        <div style="height:30px;display:flex;justify-content:center">
+          <div style="width:1px;background:var(--border);height:100%"></div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:60px;position:relative">
+          <div style="position:absolute;top:0;left:25%;right:25%;height:1px;background:var(--border)"></div>
+          <div class="tree-branch">
+            <div class="tree-edge-label">Move A (R=0)</div>
+            <div class="t-node state-s2" id="chess-s2" onclick="selectChess('s2')">
+              <div class="node-name" style="color:var(--teal)">S₂</div>
+              <div class="node-val" style="color:var(--teal)" id="s2-val">V=7</div>
+              <div class="node-desc">→ Checkmate path</div>
+            </div>
+          </div>
+          <div class="tree-branch">
+            <div class="tree-edge-label">Move B (R=0)</div>
+            <div class="t-node state-s3" id="chess-s3" onclick="selectChess('s3')">
+              <div class="node-name" style="color:#c0392b">S₃</div>
+              <div class="node-val" style="color:#c0392b" id="s3-val">V=3</div>
+              <div class="node-desc">→ Lose queen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chess-explanation">
+        <div class="exp-block selected" id="exp-s1" onclick="selectChess('s1')">
+          <div class="exp-label" style="color:var(--purple)">State S₁ — Current Position</div>
+          Both moves give reward = 0. Without a value function, the agent cannot decide which move is better. This is the fundamental limitation of relying solely on immediate rewards.
+        </div>
+        <div class="exp-block" id="exp-s2" onclick="selectChess('s2')">
+          <div class="exp-label" style="color:var(--teal)">State S₂ — V(S₂) = 7 ✓</div>
+          Five moves from here, the agent can deliver checkmate. The value function encodes this future outcome. Choosing Move A is the correct decision — even though the immediate reward is 0.
+        </div>
+        <div class="exp-block" id="exp-s3" onclick="selectChess('s3')">
+          <div class="exp-label" style="color:#c0392b">State S₃ — V(S₃) = 3 ✗</div>
+          Three moves from here, the agent loses its queen — a costly mistake. The value 3 already accounts for this future loss. Avoid Move B, despite the same immediate reward of 0.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">🔑 The Core Distinction</div>
+    <p><strong class="hi">Reward R</strong> = immediate feedback for the last action. Myopic.<br><strong class="teal">Value Function V(s) / Q(s,a)</strong> = expected total future reward from this point forward. Forward-looking. Value functions capture future reward directions — when the value of S3 is computed as 3, the future queen loss is <em>already baked into that number</em>.</p>
+  </div>
+
+  <h2 class="topic">V(s) vs Q(s,a) — Which One to Use?</h2>
+  <table class="styled-table">
+    <thead><tr><th>Function</th><th>Definition</th><th>Use When</th></tr></thead>
+    <tbody>
+      <tr><td><strong>V(s)</strong></td><td>Expected future reward starting from state s, following current policy</td><td>You can model the environment — evaluate states first, then derive policy from state values</td></tr>
+      <tr><td><strong>Q(s,a)</strong></td><td>Expected future reward for taking action a in state s, then following policy</td><td>You cannot model the environment (most real-world cases: autonomous driving, robotics). Q directly tells you what to do.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout purple">
+    <div class="callout-label">Why Q-Learning uses Q, not V</div>
+    <p>In autonomous driving, you cannot write down a complete model of the environment — there are too many variables (other drivers, weather, road conditions). So you cannot compute V(s) easily because you don't know the transition probabilities. Q(s,a), however, can be estimated directly from experience: "every time I was in state S and took action A, here's what reward I got on average." Q-learning, the most famous RL algorithm, is built entirely around estimating Q(s,a) from experience.</p>
+  </div>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text"><h4>Section Complete!</h4><p>Next: the K-Armed Bandit — a simplified RL problem that isolates the action-selection challenge.</p></div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('bandit')">Next →</button>
+  </div>
+</div>
+
+<!-- K-ARMED BANDIT ──────────────────────────────────────── -->
+<div class="section" id="sec-bandit">
+  <div class="lect-tag">Lecture 2 · Framework</div>
+  <div class="section-title">The K-Armed Bandit</div>
+  <div class="section-subtitle">Stripping RL down to its pure action-selection essence — no states, just choices.</div>
+
+  <p class="body">To understand how an agent decides which action to take, Dr. Sanghita temporarily removed all the complexity of state transitions from the picture. Forget about the environment changing — imagine you are always in the same state and simply have K different actions to choose from. Which one do you pick to maximise reward? This is the <strong class="hi">K-Armed Bandit Problem</strong>.</p>
+
+  <div class="callout gold">
+    <div class="callout-label">🎰 Why "Bandit"?</div>
+    <p>The name comes from casino slot machines, colloquially called "one-armed bandits" (one lever = one arm, bandit = they take your money). A row of K such machines is a K-armed bandit. Each machine has its own unknown payout distribution. The player must decide which levers to pull to maximise total winnings — with limited plays. Each lever is one action; each pull is one time step.</p>
+  </div>
+
+  <h2 class="topic">The Action Value Estimate</h2>
+  <p class="body">Since the true reward distribution of each action is unknown, the agent must estimate it. The simplest and most principled way is to take the running average of all rewards received from that action so far.</p>
+
+  <div class="formula">
+    <div class="formula-label">Action Value Estimate Q(a)</div>
+    Q(a) = Σ(rewards when action a was taken) ÷ (number of times a was taken)
+  </div>
+
+  <p class="body">This is just a sample mean. By the law of large numbers, with enough trials, Q(a) converges to the <strong class="teal">true action value q*(a)</strong> — but only under one critical assumption.</p>
+
+  <div class="callout">
+    <div class="callout-label">⚠️ The Stationarity Assumption</div>
+    <p>The running average is a good estimate <em>only if</em> the reward distribution is <strong class="hi">stationary</strong> — meaning the expected reward for each action does not change over time. A casino with fixed payouts is stationary. The real stock market, a patient's response to medicine, or restaurant food quality are all <strong class="hi">non-stationary</strong>. For non-stationary settings, a weighted average (discounting old rewards) is needed — a topic for a future session.</p>
+  </div>
+
+  <h2 class="topic">The Arjun / Food Stalls Analogy</h2>
+  <p class="body">Dr. Sanghita made this concrete with a relatable example: Arjun is a new IT employee with 10 food stalls in his office cafeteria. He has never tried any of them. His goal — high satisfaction from lunch — is the reward. The 10 stalls are his 10 actions. He has no data to start with, so he explores all 10 first. After that, he can use his accumulated average ratings to make smarter choices. This is exactly how a K-Armed Bandit agent works.</p>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text"><h4>Section Complete!</h4><p>Now comes the hardest question: once you have estimates, should you always pick the best one?</p></div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('exploration')">Next →</button>
+  </div>
+</div>
+
+<!-- EXPLORATION ─────────────────────────────────────────── -->
+<div class="section" id="sec-exploration">
+  <div class="lect-tag">Lecture 2 · Core Dilemma</div>
+  <div class="section-title">Exploration vs. Exploitation</div>
+  <div class="section-subtitle">The fundamental tension at the heart of every RL algorithm ever written.</div>
+
+  <p class="body">Once an agent has some estimates of action values, it faces the most fundamental dilemma in reinforcement learning: should it <strong class="hi">exploit</strong> its current best knowledge (pick the highest estimated action) or <strong class="teal">explore</strong> (try a different action to gather more information)? Choosing purely one or the other leads to failure.</p>
+
+  <div class="card-grid">
+    <div class="card" style="border-left:4px solid var(--teal)">
+      <div class="card-icon">💰</div>
+      <div class="card-title" style="color:var(--teal)">Exploitation</div>
+      <div class="card-body">Always pick the action with the highest current Q-value. Called a "greedy move." Maximises short-term reward but risks getting permanently stuck on a suboptimal action.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent)">
+      <div class="card-icon">🔍</div>
+      <div class="card-title" style="color:var(--accent)">Exploration</div>
+      <div class="card-body">Deliberately choose a non-greedy action to discover whether something better exists. Sacrifices immediate reward but enables long-term learning and improvement.</div>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <div class="callout-label">🍜 The Noodle Stall Problem</div>
+    <p>You try the noodle stall on Day 2, but the head chef is absent — the food is mediocre. A purely greedy agent writes off noodles forever. An agent with exploration will occasionally revisit the noodle stall on some random future day and discover the food is actually great when the regular chef is in. Always exploiting means you never escape your first impressions.</p>
+  </div>
+
+  <h2 class="topic">Why Pure Exploitation Fails</h2>
+  <p class="body">If you always go with the greedy choice, three things can go wrong. First, your initial sample might have been unlucky — a good action might have had a bad outcome by chance, and you'll never revisit it. Second, the environment might change over time — the action that was best last month might not be best now. Third, there might be an even better action you've never tried because your early experiences led you down a local optimum path.</p>
+
+  <h2 class="topic">Why Pure Exploration Also Fails</h2>
+  <p class="body">If you never commit to exploiting what you know, you never build up confidence in any action. You keep collecting data but never actually use it to get good rewards. The agent learns beautifully and performs terribly. Learning without exploitation is information without action — it has no practical value.</p>
+
+  <div class="callout teal">
+    <div class="callout-label">🗺️ The Google Maps Analogy</div>
+    <p>Google Maps shows you the fastest route — that is exploitation. But sometimes you take a different route out of curiosity, or the app reroutes you after a missed turn — that is exploration. The missed turn is a "mistake" that teaches you there is a faster back road. Unless you deviate from the known path occasionally, you never discover that the back road is 10 minutes faster. RL agents need the same occasional tolerance for "mistakes" to escape local optima.</p>
+  </div>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text"><h4>Section Complete!</h4><p>Next: the ε-Greedy strategy — the elegant solution that mixes both.</p></div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('epsilon-greedy')">Next →</button>
+  </div>
+</div>
+
+<!-- EPSILON GREEDY ──────────────────────────────────────── -->
+<div class="section" id="sec-epsilon-greedy">
+  <div class="lect-tag">Lecture 2 · Strategy</div>
+  <div class="section-title">The ε-Greedy Strategy</div>
+  <div class="section-subtitle">One hyperparameter. Two modes. The simplest solution to the exploration-exploitation dilemma.</div>
+
+  <p class="body">The ε-greedy strategy is elegantly simple. Introduce one parameter ε (epsilon) representing the fraction of time steps dedicated to random exploration. With probability <strong class="teal">1−ε</strong> the agent exploits (picks the current best action). With probability <strong class="hi">ε</strong> the agent explores (picks a completely random action). That is all.</p>
+
+  <div class="formula">
+    <div class="formula-label">ε-Greedy Rule</div>
+    With prob. (1−ε): pick argmax<sub>a</sub> Q(a) &nbsp;&nbsp; [exploit]<br>
+    With prob. ε:     pick random action &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[explore]
+  </div>
+
+  <h2 class="topic">Interactive ε Visualiser</h2>
+  <p class="body">Drag the slider to change ε and see how the exploration/exploitation split changes in real time.</p>
+
+  <div class="eps-viz">
+    <div class="eps-slider-wrap">
+      <label>ε =</label>
+      <input type="range" min="0" max="100" value="20" id="epsSlider" oninput="updateEpsViz()">
+      <span class="val" id="epsVal">0.20</span>
+    </div>
+    <div class="eps-track">
+      <div class="eps-exploit" id="epsExploit" style="width:80%">Exploit 80%</div>
+      <div class="eps-explore" id="epsExplore" style="width:20%">Explore 20%</div>
+    </div>
+    <div class="eps-prob-display">
+      <div class="eps-prob-box exploit">
+        <div class="pb-label">Exploitation (1−ε)</div>
+        <div class="pb-val" id="pbExploit">80%</div>
+      </div>
+      <div class="eps-prob-box explore">
+        <div class="pb-label">Exploration (ε)</div>
+        <div class="pb-val" id="pbExplore">20%</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:14px;background:var(--warm);border-radius:8px;font-size:13px;color:var(--muted)">
+      <strong style="color:var(--ink)">In practice:</strong> ε is often started high (explore aggressively early) and decayed over time as the agent gains confidence. A common schedule: start at ε=1.0, decay to ε=0.01 over training. ε is a <strong style="color:var(--accent)">hyperparameter</strong> — you choose it based on the problem.
+    </div>
+  </div>
+
+  <h2 class="topic">The Probability Puzzle from Class</h2>
+  <p class="body">This is the exact question raised during the lecture: if you have 2 actions (A1 is greedy, A2 is non-greedy) and ε = 0.5, what is the <em>total</em> probability of choosing A1?</p>
+
+  <div class="callout purple">
+    <div class="callout-label">Step-by-step solution</div>
+    <p><strong>Part 1 (Exploitation):</strong> With probability 0.5, you exploit. You definitely choose A1 (greedy). Contributes → <strong>0.50</strong><br><br><strong>Part 2 (Exploration):</strong> With probability 0.5, you explore. You pick randomly between A1 and A2 — equal chance for each. So A1 gets chosen with probability 0.5 × 0.5 = <strong>0.25</strong><br><br><strong>Total P(A1) = 0.50 + 0.25 = 0.75</strong><br><br>Even under exploration, the greedy action gets chosen more often than non-greedy, because it benefits from both phases. The general formula: P(greedy) = (1−ε) + ε/K where K is the number of actions.</p>
+  </div>
+
+  <h2 class="topic">Overview of All Four Strategies</h2>
+  <table class="styled-table">
+    <thead><tr><th>Strategy</th><th>Mechanism</th><th>Limitation</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Greedy</strong></td><td>Always pick max Q(a) — pure exploitation</td><td>Gets stuck in local optima; never discovers better options</td></tr>
+      <tr><td><strong>ε-Greedy</strong></td><td>Exploit with prob 1−ε, random explore with prob ε</td><td>Exploration is purely random — inefficient; ε must be tuned</td></tr>
+      <tr><td><strong>UCB</strong></td><td>Prefer less-tried actions intelligently (not randomly)</td><td>More complex; covered in Session 3</td></tr>
+      <tr><td><strong>Optimistic Init</strong></td><td>Start all Q(a) high to force early exploration</td><td>Only works for stationary distributions</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text"><h4>Section Complete!</h4><p>Next: Temporal Difference — how learning actually happens across time steps.</p></div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('td-learning')">Next →</button>
+  </div>
+</div>
+
+<!-- TEMPORAL DIFFERENCE ─────────────────────────────────── -->
+<div class="section" id="sec-td-learning">
+  <div class="lect-tag">Lecture 2 · Learning Mechanism</div>
+  <div class="section-title">Temporal Difference Learning</div>
+  <div class="section-subtitle">The same intuition as gradient descent — but learning happens across time, not across a dataset.</div>
+
+  <p class="body">At some point in the session, a student asked the natural question: when we say an RL agent "learns," what is actually happening mechanically? Dr. Sanghita answered this by drawing a direct, explicit parallel to the update rule in supervised learning that every student already knows from their previous courses.</p>
+
+  <h2 class="topic">The Parallel to Supervised Learning</h2>
+  <p class="body">In supervised learning, the weight update rule is: <code style="background:var(--warm);padding:2px 6px;border-radius:4px;font-family:var(--mono)">w_new = w_current + α × (target − prediction)</code>. The key idea is that the <strong class="hi">error</strong> — the gap between your prediction and the actual outcome — is used to nudge the model in the right direction, scaled by a learning rate α.</p>
+  <p class="body">In RL, the same principle applies, but instead of comparing a prediction to a known label, you compare your <strong class="teal">value estimate at time t</strong> to your <strong class="teal">value estimate at time t+1</strong>. The difference between these adjacent-in-time estimates is the TD error. Because learning happens by comparing moments in time, it is called Temporal Difference learning.</p>
+
+  <table class="styled-table">
+    <thead><tr><th>Aspect</th><th>Supervised Learning</th><th>TD Learning (RL)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Core update rule</strong></td><td>w = w + α × (target − prediction)</td><td>Q = Q + α × TD_error</td></tr>
+      <tr><td><strong>What is the error?</strong></td><td>Prediction vs. known true label</td><td>Value estimate at t vs estimate at t+1</td></tr>
+      <tr><td><strong>When does learning happen?</strong></td><td>After each batch/epoch</td><td>After each time step — continuously</td></tr>
+      <tr><td><strong>Role of α</strong></td><td>Controls weight update speed</td><td>Same — a hyperparameter to be tuned</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="topic">Effect of Different α Values</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🚫</div>
+      <div class="card-title">α = 0</div>
+      <div class="card-body">Estimates never change. The agent starts with its initial guesses and stays there forever. Zero learning — identical to a frozen ML model.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📌</div>
+      <div class="card-title">α = constant</div>
+      <div class="card-body">Standard approach. Gives slightly more weight to recent rewards — desirable for non-stationary environments where the world changes over time.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📉</div>
+      <div class="card-title">α decreasing</div>
+      <div class="card-body">Starts high (learn fast while everything is new), reduces over time (trust accumulated experience). Mathematically guaranteed to converge under certain conditions.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">Coming Up at Mid-Semester</div>
+    <p>The full TD update rule with its formal mathematical derivation, including the Bellman equation that underpins it, will be the core topic around your mid-semester exams. Everything you have learned in these first two sessions — policy, value functions, rewards, and the TD principle — will come together in that formulation. Keep these fundamentals sharp.</p>
+  </div>
+
+  <div class="section-complete">
+    <span class="sc-icon">✓</span>
+    <div class="sc-text"><h4>Both Lectures Complete! 🎓</h4><p>Time to test yourself. Try the Lecture 1 Quiz first.</p></div>
+    <button class="btn btn-primary sc-btn btn-sm" onclick="show('quiz1')">Take Quiz 1 →</button>
+  </div>
+</div>
+
+<!-- FLASHCARDS ──────────────────────────────────────────── -->
+<div class="section" id="sec-flashcards">
+  <div class="lect-tag">Study Tool</div>
+  <div class="section-title">Concept Flashcards</div>
+  <div class="section-subtitle">Click a card to reveal the definition. Use arrows to navigate. Test yourself before the quiz.</div>
+
+  <div class="flashcard-container" onclick="flipCard()">
+    <div class="flashcard" id="flashcard">
+      <div class="card-face card-front">
+        <div class="fc-tag" id="fc-tag">Lecture 1</div>
+        <div class="fc-term" id="fc-term">Reinforcement Learning</div>
+        <div class="fc-hint">Click to reveal definition</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="fc-def" id="fc-def">A learning paradigm where an agent learns to make decisions by interacting with an environment, receiving reward signals as feedback — with no pre-existing dataset.</div>
+        <div class="fc-example" id="fc-ex">Like learning to ride a bicycle — no textbook, just trial, error, and feedback from falling.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flashcard-nav">
+    <button class="btn btn-outline btn-sm" onclick="prevCard()">← Prev</button>
+    <span class="fc-counter" id="fc-counter">1 / 20</span>
+    <button class="btn btn-outline btn-sm" onclick="nextCard()">Next →</button>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Click the card to flip it</p>
+</div>
+
+<!-- QUIZ 1 ──────────────────────────────────────────────── -->
+<div class="section" id="sec-quiz1">
+  <div class="lect-tag">Practice · Lecture 1</div>
+  <div class="section-title">Quiz — Lecture 1</div>
+  <div class="section-subtitle">8 questions covering RL fundamentals, elements, and the vacuum world.</div>
+
+  <div class="quiz-progress">
+    <span id="q1-progress">Question 1 of 8</span>
+    <span class="quiz-score-badge" id="q1-score">Score: 0/0</span>
+  </div>
+  <div id="quiz1-container"></div>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-outline btn-sm" onclick="prevQuizQ(1)" id="q1-prev" style="display:none">← Prev</button>
+    <button class="btn btn-primary btn-sm" onclick="nextQuizQ(1)" id="q1-next" style="display:none">Next Question →</button>
+    <button class="btn btn-teal btn-sm" onclick="show('quiz2')" id="q1-finish" style="display:none">Go to Quiz 2 →</button>
+  </div>
+</div>
+
+<!-- QUIZ 2 ──────────────────────────────────────────────── -->
+<div class="section" id="sec-quiz2">
+  <div class="lect-tag">Practice · Lecture 2</div>
+  <div class="section-title">Quiz — Lecture 2</div>
+  <div class="section-subtitle">8 questions covering value functions, K-Armed Bandit, and ε-Greedy.</div>
+
+  <div class="quiz-progress">
+    <span id="q2-progress">Question 1 of 8</span>
+    <span class="quiz-score-badge" id="q2-score">Score: 0/0</span>
+  </div>
+  <div id="quiz2-container"></div>
+  <div style="display:flex;gap:12px;margin-top:16px">
+    <button class="btn btn-outline btn-sm" onclick="prevQuizQ(2)" id="q2-prev" style="display:none">← Prev</button>
+    <button class="btn btn-primary btn-sm" onclick="nextQuizQ(2)" id="q2-next" style="display:none">Next Question →</button>
+    <button class="btn btn-teal btn-sm" onclick="show('bandit-sim')" id="q2-finish" style="display:none">Try the Simulator →</button>
+  </div>
+</div>
+
+<!-- BANDIT SIMULATOR ────────────────────────────────────── -->
+<div class="section" id="sec-bandit-sim">
+  <div class="lect-tag">Interactive Simulator</div>
+  <div class="section-title">K-Armed Bandit Simulator</div>
+  <div class="section-subtitle">Pull slot machines, choose your strategy, and watch Q-value estimates update in real time.</div>
+
+  <p class="body">This is a live 5-armed bandit. Each machine has a hidden true reward distribution. Click a machine to pull it, or use Auto-Play to run many trials. Switch between Greedy and ε-Greedy strategies and observe how the estimates and total reward differ.</p>
+
+  <div class="bandit-sim" id="banditSimSection">
+    <h3>5-Armed Bandit</h3>
+    <p class="sim-desc">Click any slot machine to pull it. Watch Q-values (estimated values) update after each pull.</p>
+
+    <div class="bandits-row" id="banditsRow"></div>
+
+    <div style="margin:0 4px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Q-value estimates (bars = estimated value, highlighted = current best)</span>
+      </div>
+      <div class="q-bars" id="qBars"></div>
+    </div>
+
+    <div class="bandit-stats">
+      <div class="stat-box"><div class="stat-label">Total Reward</div><div class="stat-val" id="bs-reward">0</div></div>
+      <div class="stat-box"><div class="stat-label">Total Pulls</div><div class="stat-val" id="bs-pulls">0</div></div>
+      <div class="stat-box"><div class="stat-label">Best Machine</div><div class="stat-val" id="bs-best">—</div></div>
+      <div class="stat-box"><div class="stat-label">Explore Pulls</div><div class="stat-val" id="bs-explore">0</div></div>
+    </div>
+
+    <div class="bandit-log" id="banditLog"><span class="log-info">Pull a lever to begin...</span></div>
+
+    <div class="bandit-controls">
+      <select class="strategy-select" id="strategySelect" onchange="updateStrategyUI()">
+        <option value="greedy">Strategy: Greedy</option>
+        <option value="eps" selected>Strategy: ε-Greedy</option>
+      </select>
+      <div class="epsilon-control">
+        <label>ε:</label>
+        <input type="range" min="0" max="50" value="20" id="simEps" oninput="updateSimEps()">
+        <span class="eps-val" id="simEpsVal">0.20</span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="autoPlay(10)">Auto ×10</button>
+      <button class="btn btn-teal btn-sm" onclick="autoPlay(50)">Auto ×50</button>
+      <button class="btn btn-outline btn-sm" onclick="resetSim()">Reset</button>
+    </div>
+  </div>
+</div>
+
+</main><!-- end .main -->
+
+<script>
+// ── State & Navigation ─────────────────────────────────────────
+const visited = new Set();
+
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById('sec-' + id);
+  if (sec) sec.classList.add('active');
+  const nav = document.querySelector(`[onclick="show('${id}')"]`);
+  if (nav) nav.classList.add('active');
+  visited.add(id);
+  updateProgress();
+  window.scrollTo(0, 0);
+  if (id === 'bandit-sim') initSim();
+  if (id === 'quiz1') initQuiz(1);
+  if (id === 'quiz2') initQuiz(2);
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function updateProgress() {
+  const total = 14;
+  const pct = Math.round((visited.size / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${visited.size} of ${total} sections visited`;
+}
+
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ── RL Loop Animation ─────────────────────────────────────────
+let loopStep = 0;
+const loopSteps = [
+  { label:'Step 1 of 4', text:'The Agent observes the current state Sₜ of the environment — like a robot taking a picture of the room around it.', agent:true, action:false, env:false, reward:false, arr1:false, arr2:false, arr3:false },
+  { label:'Step 2 of 4', text:'The Agent selects an action Aₜ based on its current policy — perhaps Suck, Move Left, or in chess, move the knight.', agent:true, action:true, env:false, reward:false, arr1:true, arr2:false, arr3:false },
+  { label:'Step 3 of 4', text:'The action is applied to the Environment. The world changes — the room becomes clean, the chess board changes.', agent:false, action:true, env:true, reward:false, arr1:false, arr2:true, arr3:false },
+  { label:'Step 4 of 4', text:'The Environment returns a Reward Rₜ and the new state Sₜ₊₁. The agent uses this to update its value estimates. Loop repeats.', agent:false, action:false, env:true, reward:true, arr1:false, arr2:false, arr3:true },
+];
+function nextLoopStep() {
+  loopStep = (loopStep + 1) % (loopSteps.length + 1);
+  if (loopStep === 0) { resetLoop(); return; }
+  const s = loopSteps[loopStep - 1];
+  document.getElementById('loop-step-label').textContent = s.label;
+  document.getElementById('loop-step-text').textContent = s.text;
+  const nodes = ['loop-agent','loop-action','loop-env','loop-reward'];
+  const keys  = ['agent','action','env','reward'];
+  nodes.forEach((n,i) => {
+    const el = document.getElementById(n);
+    el.classList.remove('pulse','pulse-teal');
+    if (s[keys[i]]) el.classList.add(keys[i] === 'env' || keys[i] === 'reward' ? 'pulse-teal' : 'pulse');
+  });
+  ['arr1','arr2','arr3'].forEach(a => {
+    const el = document.getElementById(a);
+    el.classList.toggle('lit', s[a]);
+  });
+}
+function resetLoop() {
+  loopStep = 0;
+  document.getElementById('loop-step-label').textContent = 'Step 0 of 4';
+  document.getElementById('loop-step-text').textContent = 'Click "Next Step" to walk through the RL loop';
+  ['loop-agent','loop-action','loop-env','loop-reward'].forEach(n => {
+    document.getElementById(n).classList.remove('pulse','pulse-teal');
+  });
+  ['arr1','arr2','arr3'].forEach(a => document.getElementById(a).classList.remove('lit'));
+}
+
+// ── Vacuum World ──────────────────────────────────────────────
+let vacState = 0; // 0=initial, 1=sucked A, 2=moved right, 3=sucked B, 4=done
+let vacAnim = null;
+
+const vacSteps = [
+  () => {
+    document.getElementById('vroom-A').className='vac-room clean';
+    document.getElementById('dirt-A').style.opacity='0';
+    document.getElementById('vac-status').textContent = 'Action: SUCK | Room A → Clean ✓ | Reward: +1';
+    document.getElementById('ps0').className='pol-step done';
+    document.getElementById('ps1').className='pol-step current';
+  },
+  () => {
+    const agent = document.getElementById('agent-icon');
+    agent.style.left='108px'; agent.style.bottom='12px';
+    document.getElementById('vac-status').textContent = 'Action: MOVE RIGHT | Agent now in Room B | Reward: -1';
+    document.getElementById('ps1').className='pol-step done';
+    document.getElementById('ps2').className='pol-step current';
+  },
+  () => {
+    document.getElementById('vroom-B').className='vac-room clean';
+    document.getElementById('dirt-B').style.opacity='0';
+    document.getElementById('vac-status').textContent = 'Action: SUCK | Room B → Clean ✓ | Reward: +1';
+    document.getElementById('ps2').className='pol-step done';
+    document.getElementById('ps3').className='pol-step current';
+  },
+  () => {
+    document.getElementById('vac-status').textContent = '✅ Goal achieved! Both rooms clean. Total reward: +1 -1 +1 = +1';
+  }
+];
+
+function vacStep() {
+  if (vacState >= vacSteps.length) return;
+  vacSteps[vacState]();
+  vacState++;
+}
+function vacAuto() {
+  if (vacAnim) return;
+  let i = vacState;
+  function step() {
+    if (i >= vacSteps.length) { vacAnim = null; return; }
+    vacSteps[i](); i++; vacState = i;
+    vacAnim = setTimeout(step, 1200);
+  }
+  step();
+}
+function vacReset() {
+  clearTimeout(vacAnim); vacAnim = null; vacState = 0;
+  document.getElementById('vroom-A').className='vac-room dirty';
+  document.getElementById('vroom-B').className='vac-room dirty';
+  document.getElementById('dirt-A').style.opacity='1';
+  document.getElementById('dirt-B').style.opacity='1';
+  document.getElementById('agent-icon').style.left='28px';
+  document.getElementById('agent-icon').style.bottom='12px';
+  document.getElementById('vac-status').textContent='State: Agent in Room A | Room A: Dirty | Room B: Dirty | Reward: 0';
+  ['ps0','ps1','ps2','ps3'].forEach((id,i) => {
+    document.getElementById(id).className = 'pol-step' + (i===0?' current':'');
+  });
+}
+
+// ── Chess Demo ────────────────────────────────────────────────
+function selectChess(node) {
+  ['s1','s2','s3'].forEach(n => {
+    document.getElementById('chess-'+n).classList.remove('highlighted');
+    document.getElementById('exp-'+n).classList.remove('selected');
+  });
+  document.getElementById('chess-'+node).classList.add('highlighted');
+  document.getElementById('exp-'+node).classList.add('selected');
+}
+
+// ── ε Visualiser ──────────────────────────────────────────────
+function updateEpsViz() {
+  const v = document.getElementById('epsSlider').value / 100;
+  document.getElementById('epsVal').textContent = v.toFixed(2);
+  const ep = Math.round(v * 100);
+  const ex = 100 - ep;
+  document.getElementById('epsExploit').style.width = ex + '%';
+  document.getElementById('epsExploit').textContent = ex > 8 ? `Exploit ${ex}%` : '';
+  document.getElementById('epsExplore').style.width = ep + '%';
+  document.getElementById('epsExplore').textContent = ep > 8 ? `Explore ${ep}%` : '';
+  document.getElementById('pbExploit').textContent = ex + '%';
+  document.getElementById('pbExplore').textContent = ep + '%';
+}
+
+// ── Flashcards ────────────────────────────────────────────────
+const cards = [
+  { tag:'Lecture 1', term:'Reinforcement Learning', def:'A learning paradigm where an agent learns by interacting with an environment and receiving reward signals — with no pre-existing dataset.', ex:'Learning to ride a bicycle — no textbook, just trial, error, and environmental feedback.' },
+  { tag:'Lecture 1', term:'Agent', def:'The learner and decision-maker in an RL system. It perceives the environment, selects actions, and receives rewards.', ex:'The robot vacuum in the vacuum world example. The chess player. The autonomous car.' },
+  { tag:'Lecture 1', term:'Environment', def:'Everything outside the agent that the agent interacts with. It responds to actions by producing new states and rewards.', ex:'The two rooms in the vacuum world. The chess board. The road network for a self-driving car.' },
+  { tag:'Lecture 1', term:'State (S)', def:'The current situation or observation — the "picture the robot takes of the world around it" at a given time step.', ex:'In vacuum world: (current room=A, room A=dirty, room B=dirty). In chess: the current board configuration.' },
+  { tag:'Lecture 1', term:'Policy (π)', def:'The agent\'s strategy — the probability distribution over actions given the current state. The ultimate output of every RL algorithm.', ex:'π(Suck | Room A dirty) = 1.0 in the vacuum world optimal policy.' },
+  { tag:'Lecture 1', term:'Reward (R)', def:'A scalar feedback signal from the environment after each action. Can be positive, negative, immediate, delayed, sparse, or noisy.', ex:'+1 for cleaning a room, −1 for moving without cleaning in the vacuum world.' },
+  { tag:'Lecture 1', term:'Sequential Decision Making', def:'A problem structure where each decision changes the state of the world, and future states depend on current actions — decisions are chained through time.', ex:'Every move in chess depends on the board position created by previous moves.' },
+  { tag:'Lecture 1', term:'Deterministic Environment', def:'An environment where the same action in the same state always leads to the same next state — no randomness in transitions.', ex:'Chess: moving a knight always lands on the same square given the same board position.' },
+  { tag:'Lecture 1', term:'Stochastic Environment', def:'An environment where the same action in the same state can lead to different next states with different probabilities.', ex:'Stock market investing: the same investment can yield profit or loss depending on unpredictable factors.' },
+  { tag:'Lecture 1', term:'Optimal Policy (π*)', def:'The policy that maximises expected cumulative reward from any starting state. The goal every RL algorithm is trying to find.', ex:'In vacuum world: Suck (if dirty) → Move Right → Suck (if dirty). This achieves the maximum reward of +1 net.' },
+  { tag:'Lecture 2', term:'Value Function V(s)', def:'The expected total future reward an agent can accumulate starting from state s, following its current policy — a long-term quality measure.', ex:'V(S₂)=7 in the chess example means following the path from S₂ eventually leads to checkmate.' },
+  { tag:'Lecture 2', term:'Action Value Q(s,a)', def:'The expected total future reward for taking action a in state s and then following the current policy. Directly evaluates the quality of a state-action pair.', ex:'Q(S₁, Move A) is higher than Q(S₁, Move B) in the chess example, even though both give reward 0.' },
+  { tag:'Lecture 2', term:'K-Armed Bandit', def:'A simplified RL problem with only one state and K possible actions. The agent must identify which action yields the maximum expected reward through repeated trials.', ex:'A row of K slot machines — pull levers to find which machine pays out the most. Named after casino one-armed bandits.' },
+  { tag:'Lecture 2', term:'Action Value Estimate Q(a)', def:'The running mean of all rewards received when action a was taken. Used as an estimate of the true action value q*(a).', ex:'If machine A paid out [2, 3, 1] on three pulls, Q(A) = (2+3+1)/3 = 2.0.' },
+  { tag:'Lecture 2', term:'Greedy Action Selection', def:'Always choosing the action with the highest current estimated value Q(a) — pure exploitation with no exploration.', ex:'Always going to the biryani stall because it had the best food on Day 1, never trying other stalls again.' },
+  { tag:'Lecture 2', term:'Exploration', def:'Deliberately choosing a non-greedy action to gather more information about the environment — sacrificing short-term reward for long-term learning.', ex:'Revisiting the noodle stall on a random day even though biryani had a higher average rating.' },
+  { tag:'Lecture 2', term:'Exploitation', def:'Using current knowledge to take the best known action — choosing the highest estimated Q(a). Maximises immediate expected reward.', ex:'Going to biryani every day because your data says it is the best option.' },
+  { tag:'Lecture 2', term:'ε-Greedy Strategy', def:'Exploit (choose max Q(a)) with probability 1−ε, and explore (choose random action) with probability ε. ε is a hyperparameter.', ex:'With ε=0.2: explore 20% of the time randomly, exploit best known action 80% of the time.' },
+  { tag:'Lecture 2', term:'Temporal Difference (TD) Error', def:'The difference between the value estimate at time t and the value estimate at time t+1. The RL analogue of prediction error in supervised learning.', ex:'TD_error = R_{t+1} + γV(S_{t+1}) − V(S_t). Used to update value estimates after each time step.' },
+  { tag:'Lecture 2', term:'Stationary Distribution', def:'A reward distribution that does not change over time — the expected reward for each action remains constant. Opposite is non-stationary.', ex:'A casino with fixed payout tables is stationary. Stock market returns are non-stationary — they change daily.' },
+];
+let cardIdx = 0; let cardFlipped = false;
+function renderCard() {
+  const c = cards[cardIdx];
+  document.getElementById('fc-tag').textContent = c.tag;
+  document.getElementById('fc-term').textContent = c.term;
+  document.getElementById('fc-def').textContent = c.def;
+  document.getElementById('fc-ex').textContent = c.ex;
+  document.getElementById('fc-counter').textContent = `${cardIdx+1} / ${cards.length}`;
+  document.getElementById('flashcard').classList.remove('flipped');
+  cardFlipped = false;
+}
+function flipCard() { cardFlipped = !cardFlipped; document.getElementById('flashcard').classList.toggle('flipped', cardFlipped); }
+function nextCard() { cardIdx = (cardIdx + 1) % cards.length; renderCard(); }
+function prevCard() { cardIdx = (cardIdx - 1 + cards.length) % cards.length; renderCard(); }
+
+// ── Quiz Data ─────────────────────────────────────────────────
+const quizData = {
+  1: [
+    { q:'Which of the following is the BEST analogy for reinforcement learning according to Dr. Sanghita?', opts:['Reading a textbook about cycling before riding a bicycle','Learning to ride a bicycle through trial, error, and feedback from falling','Using a GPS to navigate a new city','Copying how a professional cyclist rides'], ans:1, exp:'Dr. Sanghita opened both lectures with the bicycle analogy — you learn RL by interacting, falling, and adjusting. No textbook exists for maintaining your personal center of gravity.' },
+    { q:'What makes a problem a candidate for reinforcement learning (pick the MOST complete answer)?', opts:['The problem requires a neural network solution','No pre-existing labelled dataset; sequential decisions; a well-defined goal','Only when the environment is fully known','When supervised learning has failed'], ans:1, exp:'All three conditions must hold: no pre-loaded data, sequential decision-making structure, and a goal that can be expressed as a cumulative reward.' },
+    { q:'In the vacuum world example, the reward for successfully cleaning a room is +1. What is the reward for just MOVING between rooms?', opts:['0 (no reward, no penalty)','−1 (small negative reward)','The same as cleaning: +1','Depends on whether both rooms are already clean'], ans:1, exp:'The reward for movement is −1 to discourage unnecessary wandering. This forces the agent to find the shortest path to its cleaning goal rather than moving around at random.' },
+    { q:'Which of these correctly identifies the SEVEN elements of RL?', opts:['Agent, Dataset, Labels, Loss, Optimizer, Model, Prediction','Agent, Environment, State, Action, Reward, Policy, Value Function','State, Action, Reward, Transition, Goal, Loss, Learning Rate','Agent, Robot, World, Sensor, Actuator, Control, Feedback'], ans:1, exp:'The seven elements are: Agent, Environment, State (S), Action (A), Reward (R), Policy (π), and Value Function V(s)/Q(s,a). These are the building blocks of every RL system.' },
+    { q:'Reinforcement learning is described as a learning PARADIGM, not a model type. What does this mean?', opts:['RL can only be implemented using deep neural networks','The mathematical function inside the RL agent can be any model type — neural net, decision tree, etc.','RL is a specific algorithm you can install like a library','RL requires more data than supervised learning'], ans:1, exp:'Dr. Sanghita was emphatic: RL is a strategy for learning, not a specific model. The mathematical function inside the agent (neural net, table, etc.) can vary. What defines RL is the paradigm of learning through environmental interaction.' },
+    { q:'What is a DETERMINISTIC transition in RL?', opts:['A transition where the agent always gets a positive reward','A transition where the same state and action always lead to the same next state','A transition that happens instantly without any time passing','A transition that the environment makes randomly'], ans:1, exp:'Deterministic means one-to-one: given state S and action A, you always land in the same S\'. Chess moves are deterministic. Stock market investments are stochastic (you might land in profit or loss depending on market forces).' },
+    { q:'In the RL loop, in what ORDER do these events happen?', opts:['Reward → State → Action → New State','State → Action → Environment reacts → Reward + New State','Action → Reward → State → Policy update','Policy → Reward → Action → State'], ans:1, exp:'The correct sequence is: Agent observes State Sₜ → selects Action Aₜ → Environment reacts → produces Reward Rₜ and new State Sₜ₊₁. This loop repeats indefinitely during training.' },
+    { q:'The OPTIMAL POLICY in the vacuum world (starting with Agent in Room A, both rooms dirty) is:', opts:['Move Right → Suck → Move Left → Suck','Suck → Move Right → Suck','Suck → Suck → Move Right','Move Left → Suck → Move Right → Suck'], ans:1, exp:'The optimal policy is: Suck (clean Room A, +1) → Move Right (go to B, −1) → Suck (clean Room B, +1). Net reward = +1. Any other sequence would involve unnecessary moves and a worse net reward.' },
+  ],
+  2: [
+    { q:'Why is IMMEDIATE REWARD not sufficient for decision-making in the chess example from Lecture 2?', opts:['Because chess moves are always worth exactly 1 point','Because both available moves give the same immediate reward (0), making them indistinguishable by reward alone','Because rewards are always delayed in chess','Because the chess agent does not know the rules'], ans:1, exp:'Mid-game moves all give reward 0 by design (only win/loss at the end count). Both Move A and Move B give 0 reward, yet one leads to checkmate and the other to losing the queen. Value functions break the tie.' },
+    { q:'V(S₂) = 7 and V(S₃) = 3 in the chess example. The correct move is Move A (to S₂). Why?', opts:['Because 7 > 3, and a higher value means more expected future reward from that state','Because S₂ gives a higher immediate reward than S₃','Because Move A has been tried more often','Because the domain expert decided Move A was better'], ans:0, exp:'The value function V(s) represents expected future reward. V(S₂) = 7 means the path through S₂ is expected to yield more cumulative reward (e.g., checkmate in 5 moves) than V(S₃) = 3 (which leads to losing the queen).' },
+    { q:'When would you use Q(s,a) instead of V(s)?', opts:['When the environment is fully deterministic','When you cannot model the environment — Q directly tells you which action to take without needing transition probabilities','When you only have one action available','When the reward is always immediate'], ans:1, exp:'V(s) requires knowing the model dynamics (transition probabilities) to extract a policy from state values. Q(s,a) evaluates actions directly, making it usable even when you cannot model the environment — which is true for most real-world problems.' },
+    { q:'In the K-Armed Bandit problem, why is "state" temporarily removed from consideration?', opts:['Because states are unimportant in RL','To isolate and focus purely on the action-selection problem — which action to choose to maximise reward','Because the bandit has too many states to enumerate','Because the bandit environment is always deterministic'], ans:1, exp:'The K-Armed Bandit strips RL down to its pure action-selection essence. There is only one state, it never changes, and the agent simply needs to identify which of K actions yields the best expected reward. This isolates the explore-exploit dilemma cleanly.' },
+    { q:'The action value estimate Q(a) = Σ(rewards) / (times taken). Why is this only a GOOD estimate when the reward distribution is STATIONARY?', opts:['Because averaging only works with small numbers','Because non-stationary distributions change over time, making old rewards misleading about current expected value','Because stationary means the rewards are always positive','Because the law of large numbers only applies in casinos'], ans:1, exp:'For a stationary distribution, the sample mean converges to the true expected value with enough trials. For non-stationary distributions (like stocks), the expected reward changes over time — old rewards from 6 months ago are misleading about today\'s expected reward.' },
+    { q:'With ε = 0.1 and 4 actions (A1 is greedy), what is P(choosing A1)?', opts:['0.10','0.90','0.925','0.75'], ans:2, exp:'P(A1) = (1−ε) + ε×(1/K) = 0.9 + 0.1×0.25 = 0.9 + 0.025 = 0.925. The greedy action is always chosen during exploitation (0.9), plus it has a 1/4 chance of being randomly selected during exploration (0.1 × 0.25 = 0.025).' },
+    { q:'In Temporal Difference learning, what plays the role of "error" that gets multiplied by the learning rate α?', opts:['The difference between the true label and the prediction, as in supervised learning','The difference between the value estimate at time t and the value estimate at time t+1','The total cumulative reward received so far','The number of actions remaining in the episode'], ans:1, exp:'The TD error is the gap between consecutive value estimates: what you expected at time t vs what you updated your estimate to at t+1. This temporal difference signal is the RL analogue of prediction error in supervised learning.' },
+    { q:'What happens if α (learning rate) = 0 in a TD learning agent?', opts:['The agent learns infinitely fast','The value estimates never update — the agent does not learn at all','The agent always exploits and never explores','The rewards become non-stationary'], ans:1, exp:'With α = 0, the TD update rule becomes: Q_new = Q_current + 0 × error = Q_current. Nothing changes. The agent is completely frozen — identical to a machine learning model with a zero learning rate where weights never update.' },
+  ]
+};
+
+// ── Quiz Engine ───────────────────────────────────────────────
+const quizState = {
+  1: { current:0, score:0, answered:0, responses:{} },
+  2: { current:0, score:0, answered:0, responses:{} }
+};
+
+function initQuiz(num) {
+  const s = quizState[num];
+  s.current = 0; s.score = 0; s.answered = 0; s.responses = {};
+  renderQuestion(num);
+}
+
+function renderQuestion(num) {
+  const s = quizState[num];
+  const qs = quizData[num];
+  const q = qs[s.current];
+  document.getElementById(`q${num}-progress`).textContent = `Question ${s.current+1} of ${qs.length}`;
+  document.getElementById(`q${num}-score`).textContent = `Score: ${s.score}/${s.answered}`;
+
+  const container = document.getElementById(`quiz${num}-container`);
+  const opts = q.opts.map((o, i) => {
+    const prev = s.responses[s.current];
+    let cls = 'quiz-option';
+    if (prev !== undefined) {
+      cls += ' disabled';
+      if (i === q.ans) cls += ' correct';
+      else if (i === prev) cls += ' wrong';
+    }
+    return `<div class="${cls}" onclick="answerQ(${num}, ${i})">${String.fromCharCode(65+i)}. ${o}</div>`;
+  }).join('');
+
+  const feedbackShow = s.responses[s.current] !== undefined ? 'show' : '';
+  const feedbackCls  = s.responses[s.current] === q.ans ? 'ok' : 'bad';
+  const feedbackTxt  = s.responses[s.current] !== undefined
+    ? (s.responses[s.current] === q.ans ? '✓ Correct! ' : '✗ Incorrect. ') + q.exp
+    : '';
+
+  container.innerHTML = `
+    <div class="quiz-q">
+      <div class="q-num">Question ${s.current+1}</div>
+      ${q.q}
+    </div>
+    <div class="quiz-options">${opts}</div>
+    <div class="quiz-feedback ${feedbackCls} ${feedbackShow}">${feedbackTxt}</div>
+  `;
+
+  const isLast = s.current === qs.length - 1;
+  const answered = s.responses[s.current] !== undefined;
+  document.getElementById(`q${num}-prev`).style.display  = s.current > 0 ? '' : 'none';
+  document.getElementById(`q${num}-next`).style.display  = (!isLast && answered) ? '' : 'none';
+  document.getElementById(`q${num}-finish`).style.display = (isLast && answered) ? '' : 'none';
+}
+
+function answerQ(num, chosen) {
+  const s = quizState[num];
+  if (s.responses[s.current] !== undefined) return;
+  s.responses[s.current] = chosen;
+  s.answered++;
+  if (chosen === quizData[num][s.current].ans) s.score++;
+  renderQuestion(num);
+}
+
+function nextQuizQ(num) {
+  quizState[num].current = Math.min(quizState[num].current+1, quizData[num].length-1);
+  renderQuestion(num);
+}
+function prevQuizQ(num) {
+  quizState[num].current = Math.max(quizState[num].current-1, 0);
+  renderQuestion(num);
+}
+
+// ── Bandit Simulator ──────────────────────────────────────────
+// Hidden true means for each machine (the agent doesn't know these)
+const trueMeans = [2.1, 4.8, 3.2, 1.5, 5.5]; // machine 5 (idx 4) is best
+let simQ = [0, 0, 0, 0, 0];
+let simN = [0, 0, 0, 0, 0];
+let simTotalReward = 0;
+let simTotalPulls  = 0;
+let simExplorePulls = 0;
+let simInited = false;
+
+function initSim() {
+  if (simInited) return;
+  simInited = true;
+  buildBandits();
+  buildQBars();
+}
+
+function buildBandits() {
+  const row = document.getElementById('banditsRow');
+  row.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    row.innerHTML += `
+      <div class="bandit-machine" onclick="pullMachine(${i})">
+        <div class="machine-body" id="mb-${i}">
+          <div class="machine-screen" id="ms-${i}">?</div>
+          <div class="machine-arm" id="ma-${i}"></div>
+        </div>
+        <div class="machine-label">Machine ${i+1}</div>
+        <div class="machine-count" id="mc-${i}">Q=0.00 | n=0</div>
+      </div>`;
+  }
+}
+
+function buildQBars() {
+  const bars = document.getElementById('qBars');
+  bars.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    bars.innerHTML += `
+      <div class="q-bar-wrap">
+        <div class="q-bar-val" id="qbv-${i}">0.0</div>
+        <div class="q-bar" id="qb-${i}" style="height:3px"></div>
+        <div class="q-bar-label">M${i+1}</div>
+      </div>`;
+  }
+}
+
+function pullMachine(i, isAuto = false) {
+  // Get reward from true distribution (normal distribution around true mean)
+  const reward = trueMeans[i] + (Math.random() - 0.5) * 2;
+  simN[i]++;
+  simQ[i] = simQ[i] + (1/simN[i]) * (reward - simQ[i]); // incremental mean
+  simTotalReward += reward;
+  simTotalPulls++;
+
+  // Determine if this was exploration
+  const eps = parseFloat(document.getElementById('simEps').value) / 100;
+  const strategy = document.getElementById('strategySelect').value;
+  const bestIdx = simQ.indexOf(Math.max(...simQ));
+  const wasExplore = strategy === 'eps' && i !== bestIdx;
+  if (wasExplore) simExplorePulls++;
+
+  // Arm animation
+  const arm = document.getElementById(`ma-${i}`);
+  arm.classList.add('pulled');
+  setTimeout(() => arm.classList.remove('pulled'), 300);
+  document.getElementById(`mb-${i}`).classList.add('playing');
+  setTimeout(() => document.getElementById(`mb-${i}`).classList.remove('playing'), 400);
+
+  // Screen
+  const screen = document.getElementById(`ms-${i}`);
+  screen.textContent = reward > 0 ? `+${reward.toFixed(1)}` : reward.toFixed(1);
+  screen.style.color = reward > 3 ? '#4cfe4c' : reward > 1 ? '#ffcc00' : '#fe4c4c';
+
+  // Labels
+  document.getElementById(`mc-${i}`).textContent = `Q=${simQ[i].toFixed(2)} | n=${simN[i]}`;
+
+  // Stats
+  document.getElementById('bs-reward').textContent = simTotalReward.toFixed(1);
+  document.getElementById('bs-pulls').textContent  = simTotalPulls;
+  document.getElementById('bs-explore').textContent = simExplorePulls;
+  const best = simQ.indexOf(Math.max(...simQ));
+  document.getElementById('bs-best').textContent = `Machine ${best+1}`;
+
+  // Q-bars
+  const maxQ = Math.max(...simQ, 1);
+  simQ.forEach((q, j) => {
+    const pct = Math.max((q / maxQ) * 70, 3);
+    const bar = document.getElementById(`qb-${j}`);
+    bar.style.height = pct + 'px';
+    bar.className = 'q-bar' + (j === best ? ' best' : '');
+    document.getElementById(`qbv-${j}`).textContent = q.toFixed(1);
+  });
+
+  // Log
+  const log = document.getElementById('banditLog');
+  const cls = reward > 3 ? 'log-good' : reward < 1 ? 'log-bad' : 'log-info';
+  const tag = wasExplore ? ' [explore]' : ' [exploit]';
+  log.innerHTML = `<span class="${cls}">Pull ${simTotalPulls}: Machine ${i+1} → R=${reward.toFixed(2)}${tag}</span>\n` + log.innerHTML;
+}
+
+function getNextAction() {
+  const strategy = document.getElementById('strategySelect').value;
+  const eps = parseFloat(document.getElementById('simEps').value) / 100;
+  if (strategy === 'greedy') {
+    return simQ.indexOf(Math.max(...simQ));
+  } else {
+    if (Math.random() < eps) return Math.floor(Math.random() * 5);
+    return simQ.indexOf(Math.max(...simQ));
+  }
+}
+
+let autoTimer = null;
+function autoPlay(n) {
+  clearInterval(autoTimer);
+  let count = 0;
+  autoTimer = setInterval(() => {
+    if (count >= n) { clearInterval(autoTimer); return; }
+    pullMachine(getNextAction(), true);
+    count++;
+  }, 80);
+}
+
+function resetSim() {
+  clearInterval(autoTimer);
+  simQ = [0,0,0,0,0]; simN = [0,0,0,0,0];
+  simTotalReward = 0; simTotalPulls = 0; simExplorePulls = 0;
+  buildBandits(); buildQBars();
+  document.getElementById('bs-reward').textContent = '0';
+  document.getElementById('bs-pulls').textContent = '0';
+  document.getElementById('bs-best').textContent = '—';
+  document.getElementById('bs-explore').textContent = '0';
+  document.getElementById('banditLog').innerHTML = '<span class="log-info">Pull a lever to begin...</span>';
+}
+
+function updateSimEps() {
+  const v = parseFloat(document.getElementById('simEps').value) / 100;
+  document.getElementById('simEpsVal').textContent = v.toFixed(2);
+}
+function updateStrategyUI() {
+  const v = document.getElementById('strategySelect').value;
+  document.getElementById('simEps').disabled = v === 'greedy';
+}
+
+// ── Init ──────────────────────────────────────────────────────
+renderCard();
+visited.add('home');
+updateProgress();
+</script>
+</body>
+</html>
